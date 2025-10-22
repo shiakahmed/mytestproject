@@ -50,7 +50,7 @@
       pip:
         name: docker
         executable: pip3
-        state: present
+        extra_args: --break-system-packages
 
     - name: Start the container
       docker_container:
