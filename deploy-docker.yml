@@ -54,7 +54,7 @@
 
     - name: Start the container
       docker_container:
-        name: ansibleapp
+        name: ansibleappc1
         image: "shiakahmed53/newapp:latest"
         state: started
         published_ports:
