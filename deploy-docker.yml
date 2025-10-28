@@ -2,48 +2,60 @@
 - hosts: dev
   become: true
   tasks:
-    - name: Ensure community.docker collection is installed
-      ansible.builtin.command: ansible-galaxy collection install community.docker --force
-      changed_when: false
+    - name: Update apt cache
+      apt:
+        update_cache: yes
 
-    - name: Ensure required packages are installed
-      ansible.builtin.dnf:
+    - name: Install dependencies for Docker
+      apt:
         name:
-          - python3
-          - python3-pip
-          - dnf-plugins-core
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
         state: present
 
-    - name: Add Docker CE repository
-      ansible.builtin.command:
-        cmd: dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-      args:
-        creates: /etc/yum.repos.d/docker-ce.repo
-
-    - name: Install Docker CE
-      ansible.builtin.dnf:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
         state: present
 
-    - name: Start and enable Docker service
-      ansible.builtin.service:
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+        filename: docker
+
+    - name: Update apt cache after adding Docker repo
+      apt:
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+
+    - name: Ensure Docker service is started and enabled
+      service:
         name: docker
         state: started
-        enabled: true
+        enabled: yes
 
-    - name: Install Docker SDK for Python
-      ansible.builtin.pip:
-        name: docker
+    - name: Install pip for Python 3
+      apt:
+        name: python3-pip
         state: present
 
-    - name: Run the application container
-      community.docker.docker_container:
-        name: c1
-        image: "shiakahmed53/appdemo2:latest"
+    - name: Install docker Python module
+      pip:
+        name: docker
+        executable: pip3
+        extra_args: --break-system-packages
+
+    - name: Start the container
+      docker_container:
+        name: ansibleappc2
+        image: "shiakahmed53/demo:latest"
         state: started
-        restart_policy: always
         published_ports:
-          - "8080:8080"
+          - "0.0.0.0:8080:8080"
