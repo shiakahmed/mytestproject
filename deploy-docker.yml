@@ -1,29 +1,45 @@
-
 ---
 - hosts: dev
-  become: True
+  become: true
   tasks:
-    - name: Install python pip
-      yum:
-        name: python-pip
+    - name: Ensure base packages are installed
+      ansible.builtin.dnf:
+        name:
+          - python3
+          - python3-pip
+          - dnf-plugins-core
         state: present
-    - name: Install docker
-      yum:
-        name: docker
+
+    - name: Add Docker CE repository
+      ansible.builtin.command:
+        cmd: dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+      args:
+        creates: /etc/yum.repos.d/docker-ce.repo
+
+    - name: Install Docker CE and dependencies
+      ansible.builtin.dnf:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
         state: present
-    - name: start docker
-      service:
+
+    - name: Start and enable Docker service
+      ansible.builtin.service:
         name: docker
         state: started
-        enabled: yes
-    - name: Install docker-py python module
-      pip:
-        name: docker-py
+        enabled: true
+
+    - name: Install Docker SDK for Python (required for community.docker)
+      ansible.builtin.pip:
+        name: docker
         state: present
-    - name: Start the container
-      docker_container:
+
+    - name: Run the application container
+      community.docker.docker_container:
         name: hariapp
-        image: "shiakahmed53/appdemo1
+        image: "shiakahmed53/appdemo1:latest"
         state: started
+        restart_policy: always
         published_ports:
-          - 0.0.0.0:8080:8080
+          - "8080:8080"
