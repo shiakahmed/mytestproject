@@ -41,8 +41,8 @@
 
     - name: Run the application container
       community.docker.docker_container:
-        name: hariapp
-        image: "shiakahmed53/appdemo1:latest"
+        name: c1
+        image: "shiakahmed53/appdemo2:latest"
         state: started
         restart_policy: always
         published_ports:
