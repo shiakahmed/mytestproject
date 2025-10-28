@@ -2,6 +2,10 @@
 - hosts: dev
   become: true
   tasks:
+    - name: Ensure community.docker collection is installed
+      ansible.builtin.command: ansible-galaxy collection install community.docker --force
+      changed_when: false
+
     - name: Ensure required packages are installed
       ansible.builtin.dnf:
         name:
