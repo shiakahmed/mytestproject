@@ -65,7 +65,7 @@
 
     - name: Start the new container
       docker_container:
-        name: demoapp
+        name: demoappc1
         image: "shiakahmed53/demoapp:{{ DOCKER_TAG }}"
         state: started
         restart_policy: always
